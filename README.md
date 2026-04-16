@@ -4,6 +4,14 @@
 
 "What you see is exactly what you eat."
 
+## 📸 Preview
+
+### 🏠 Home Screen
+![Home UI](./basichome.png)
+
+### 🔐 Bottom Sheet (Auth)
+![Bottom Sheet UI](./bottomsheet.png)
+
 Zestify is a food discovery platform built to end the decision fatigue of scrolling through fake studio photos and meaningless ratings. It replaces static menus with real-person vlogs and kitchen behind-the-scenes, so your next meal is a visual certainty, not a gamble.
 
 ⚡ Quick Highlights
