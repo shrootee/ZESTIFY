@@ -1,16 +1,76 @@
-# React + Vite
+🍔 Zestify
+(IFY - items for you)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-Currently, two official plugins are available:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+"What you see is exactly what you eat."
 
-## React Compiler
+Zestify is a food discovery platform built to end the decision fatigue of scrolling through fake studio photos and meaningless ratings.
+It replaces static menus with real-person vlogs and kitchen behind-the-scenes, so your next meal is a visual certainty, not a gamble.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+⚡ Quick Highlights
+⏱️ Decide what to eat in under 60 seconds
+❌ No fake studio photos
+🎯 IFY (Items For You) personalization engine
+🧠 Philosophy
+🎥 Real over polished
 
-## Expanding the ESLint configuration
+Watch actual people eat, review, and react — not actors or edited photos.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+🍳 Kitchen transparency
+
+See the real cooking process — the sizzle, spice, and plating.
+
+🎯 Expectation = Reality
+
+What you see on screen is what you get on your plate.
+
+🚀 Features
+🎥 Vlog-first feed
+Vertical scrolling of real food vlogs and reviews
+⚡ Decide in under 60s
+Designed for fast decision-making
+🎯 IFY personalization
+Learns your taste and shows relevant food
+🔐 Just-in-time auth
+Browse freely, login only when needed
+🛠️ Tech Stack
+Frontend: React.js + Vite
+Styling: Tailwind CSS
+Authentication: Firebase Auth
+State Management: React Hooks
+Deployment: Vercel
+⚙️ Setup
+# Clone the repository
+git clone https://github.com/shrootee/ZESTIFY.git
+
+# Go into the folder
+cd ZESTIFY
+
+# Install dependencies
+npm install
+
+# Add environment variables
+cp .env.example .env
+
+# Run the app
+npm run dev
+💡 Vision
+
+Ordering food shouldn’t feel like a chore — or a gamble.
+
+Zestify combines:
+
+🎥 vlog-based transparency
+🤖 personalized recommendations
+
+to make every food decision fast, confident, and real.
+
+✨ Author
+
+Shruti Gujrathi
+CSE student · full-stack · product enthusiast
+
+
+
+final
