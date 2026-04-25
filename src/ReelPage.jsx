@@ -1,71 +1,154 @@
-import React from 'react';
-import { Heart, MessageCircle, Send, Bookmark, MapPin, Search, ArrowLeft } from 'lucide-react';
+// ReelsPage.jsx - Updated to match your Card props
+import React, { useState, useEffect, useRef } from 'react';
+import { ArrowLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { db } from './firebase';
+import { collection, query, orderBy, getDocs } from 'firebase/firestore';
+import Card from './ReelCard'; // Tera existing Card component
 
-const ReelPage = () => {
-  return (
-    <div className="relative h-[100dvh] w-full bg-black text-white overflow-hidden font-sans">
+const ReelsPage = ({ user }) => {
+  const navigate = useNavigate();
+  const [reels, setReels] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [playingId, setPlayingId] = useState(null);
+  const [muted, setMuted] = useState({});
+  const scrollContainerRef = useRef(null);
+
+  // Fetch reels
+  useEffect(() => {
+    fetchReels();
+  }, []);
+
+  const fetchReels = async () => {
+    try {
+      setLoading(true);
+      const q = query(collection(db, 'reels'), orderBy('createdAt', 'desc'));
+      const snap = await getDocs(q);
+      const data = [];
+      snap.forEach((doc) => data.push({ id: doc.id, ...doc.data() }));
+      setReels(data);
+      console.log("Fetched reels:", data); // Debug
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Auto-play current reel
+  useEffect(() => {
+    if (!loading && reels.length > 0) {
+      const currentReel = reels[currentIndex];
+      if (currentReel && playingId !== currentReel.id) {
+        // Auto play current video
+        const video = document.getElementById(`vid-${currentReel.id}`);
+        if (video) {
+          // Pause all others
+          reels.forEach(r => {
+            const otherVideo = document.getElementById(`vid-${r.id}`);
+            if (otherVideo && otherVideo !== video) {
+              otherVideo.pause();
+            }
+          });
+          video.play().catch(e => console.log("Auto-play error:", e));
+          setPlayingId(currentReel.id);
+        }
+      }
+    }
+  }, [currentIndex, loading, reels]);
+
+  // Handle scroll snap
+  const handleScroll = () => {
+    if (scrollContainerRef.current) {
+      const scrollTop = scrollContainerRef.current.scrollTop;
+      const windowHeight = window.innerHeight;
+      const index = Math.round(scrollTop / windowHeight);
       
-      {/* 1. Background Video Placeholder */}
-      <div className="absolute inset-0 z-0">
-        <img 
-          src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&q=80&w=1000" 
-          alt="Delicious Burger" 
-          className="h-full w-full object-cover"
-        />
-        {/* Dark Gradient Overlay for readability */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/80" />
-      </div>
+      if (index !== currentIndex && index >= 0 && index < reels.length) {
+        setCurrentIndex(index);
+      }
+    }
+  };
 
-      {/* 2. Top Navigation */}
-      <div className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center z-20">
-        <ArrowLeft className="w-6 h-6" />
-        <h2 className="text-lg font-bold tracking-widest uppercase">Reels</h2>
-        <Search className="w-6 h-6" />
-      </div>
+  const handleLikeClick = (reel) => {
+    console.log("Like clicked for:", reel.id);
+    // Your like logic here
+  };
 
-      {/* 3. Right Sidebar (Interaction Buttons) */}
-      <div className="absolute right-4 bottom-32 flex flex-col items-center gap-6 z-20">
-        <div className="relative">
-          <img src="https://i.pravatar.cc/100?img=12" className="w-12 h-12 rounded-full border-2 border-white" alt="Restaurant" />
-          <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-red-500 rounded-full px-1 text-[10px]">LIVE</div>
+  if (loading) {
+    return (
+      <div className="fixed inset-0 bg-black flex items-center justify-center z-50">
+        <div className="w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  if (reels.length === 0) {
+    return (
+      <div className="fixed inset-0 bg-black flex items-center justify-center z-50">
+        <div className="text-center">
+          <p className="text-white mb-4">No reels found</p>
+          <button onClick={() => navigate(-1)} className="text-orange-500">Go Back</button>
         </div>
-        <div className="flex flex-col items-center"><Heart className="w-7 h-7" /> <span className="text-xs">1.2k</span></div>
-        <div className="flex flex-col items-center"><MessageCircle className="w-7 h-7" /> <span className="text-xs">348</span></div>
-        <div className="flex flex-col items-center"><Send className="w-7 h-7" /> <span className="text-xs">512</span></div>
-        <Bookmark className="w-7 h-7" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black z-50">
+      
+      {/* BACK BUTTON */}
+      <button
+        onClick={() => navigate(-1)}
+        className="fixed top-4 left-4 z-50 w-10 h-10 rounded-full bg-black/50 backdrop-blur flex items-center justify-center hover:bg-black/70 transition"
+      >
+        <ArrowLeft size={22} className="text-white" />
+      </button>
+
+      {/* CURRENT REEL INDEX */}
+      <div className="fixed top-4 right-4 z-50 bg-black/50 backdrop-blur px-3 py-1 rounded-full">
+        <span className="text-white text-xs">
+          {currentIndex + 1} / {reels.length}
+        </span>
       </div>
 
-      {/* 4. Bottom Information & CTA */}
-      <div className="absolute bottom-16 left-0 right-0 p-5 z-20">
-        <div className="flex items-center gap-2 mb-2">
-          <span className="bg-white/20 backdrop-blur-md px-2 py-1 rounded text-xs font-semibold italic">The Burger House</span>
-          <span className="text-blue-400 text-xs">✔</span>
-        </div>
-        
-        <h1 className="text-2xl font-bold mb-1">SMOKY BBQ CHEESEBURGER</h1>
-        
-        <div className="flex items-center gap-3 text-sm text-gray-300 mb-4">
-          <span className="flex items-center gap-1 text-yellow-400">★ 4.8 <span className="text-gray-400">(914)</span></span>
-          <span className="flex items-center gap-1"><MapPin className="w-3 h-3" /> 4.5 km away</span>
-        </div>
-
-        {/* Action Button */}
-        <button className="w-full py-4 bg-orange-500 hover:bg-orange-600 transition-colors rounded-xl font-bold text-lg flex justify-between px-6 items-center shadow-lg">
-          <span>ADD TO CART</span>
-          <span>$14.99</span>
-        </button>
-      </div>
-
-      {/* 5. Mobile Bottom Nav Bar */}
-      <div className="absolute bottom-0 left-0 right-0 h-16 bg-black flex justify-around items-center border-t border-white/10 z-30">
-        <div className="flex flex-col items-center text-orange-500"><div className="w-1 h-1 bg-orange-500 mb-1 rounded-full"/>Feed</div>
-        <div className="text-gray-500 text-sm">Explore</div>
-        <div className="text-gray-500 text-sm">Map</div>
-        <div className="text-gray-500 text-sm">Orders</div>
-        <div className="text-gray-500 text-sm">Profile</div>
+      {/* VERTICAL SCROLL CONTAINER */}
+      <div
+        ref={scrollContainerRef}
+        onScroll={handleScroll}
+        className="h-full w-full overflow-y-scroll snap-y snap-mandatory"
+        style={{ 
+          scrollbarWidth: 'none', 
+          msOverflowStyle: 'none',
+          scrollSnapType: 'y mandatory'
+        }}
+      >
+        {reels.map((reel, index) => (
+          <div
+            key={reel.id}
+            className="relative h-screen w-full snap-start snap-always flex items-center justify-center bg-black"
+            style={{
+              scrollSnapAlign: 'start',
+              height: '100vh',
+              width: '100%'
+            }}
+          >
+            {/* PASS PROPS EXACTLY AS YOUR CARD EXPECTS */}
+            <Card
+              reel={reel}
+              muted={muted}
+              setMuted={setMuted}
+              playingId={playingId}
+              setPlayingId={setPlayingId}
+              handleLikeClick={handleLikeClick}
+              user={user}
+            />
+          </div>
+        ))}
       </div>
     </div>
   );
 };
 
-export default ReelPage;
+export default ReelsPage;

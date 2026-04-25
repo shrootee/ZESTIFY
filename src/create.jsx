@@ -137,6 +137,7 @@ const CreateReelPage = ({ onClose, user, goldenYellow, sunsetRed }) => {
         userName: currentUser?.displayName || 'Anonymous User',
         userPhoto: currentUser?.photoURL || '',
         likes: 0,
+        likedBy: [],
         comments: [],
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()

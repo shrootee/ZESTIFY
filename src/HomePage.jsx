@@ -4,11 +4,14 @@ import React, {
   useEffect,
   useRef,
 } from "react";
+import { IoMdHeart } from "react-icons/io";
+import Card from './ReelCard'
 import {
   auth,
   googleProvider,
   db,
 } from "./firebase";
+import { useNavigate } from "react-router-dom";
 import {
   signInWithPopup,
   onAuthStateChanged,
@@ -20,12 +23,16 @@ import {
   getDocs,
 } from "firebase/firestore";
 import LoginPage from "./LoginPage";
+ import { 
+  
+  arrayUnion, arrayRemove 
+} from "firebase/firestore";
 import CreateReelPage from "./create";
 import {
   Plus,
   Home,
   Film,
-  Heart,
+  
   User,
   MapPin,
   Search,
@@ -37,6 +44,7 @@ import {
   Share2,
   ShoppingBag,
 } from "lucide-react";
+import { doc, updateDoc, increment } from "firebase/firestore";
 
 const Homepage = ({ goToSearch }) => {
   const goldenYellow = "#FFC300";
@@ -115,6 +123,12 @@ const Homepage = ({ goToSearch }) => {
     }
   };
 
+  useEffect(() => {
+  if (user) {
+    setShowLogin(false);
+  }
+}, [user]);
+
   const handlePlusClick = () => {
     if (!user) {
       setShowLogin(true);
@@ -123,6 +137,7 @@ const Homepage = ({ goToSearch }) => {
     }
   };
 
+  
   const togglePlay = (id, videoEl) => {
     if (playingId === id) {
       videoEl.pause();
@@ -139,13 +154,64 @@ const Homepage = ({ goToSearch }) => {
       setPlayingId(id);
     }
   };
+  
 
-  const handlePost = () => {
-    if (!user) {
-      openLogin();   // 👈 panel open karega
-      return;
+ 
+
+const handleLikeClick = async (reel) => {
+  if (!user) {
+    setShowLogin(true);
+    return;
+  }
+
+  try {
+    const reelRef = doc(db, "reels", reel.id);
+
+    const alreadyLiked = reel.likedBy?.includes(user.uid);
+
+    if (alreadyLiked) {
+      // ❌ UNLIKE
+      await updateDoc(reelRef, {
+        likes: increment(-1),
+        likedBy: arrayRemove(user.uid),
+      });
+
+      setReels((prev) =>
+        prev.map((r) =>
+          r.id === reel.id
+            ? {
+                ...r,
+                likes: Math.max((r.likes || 0) - 1, 0),
+                likedBy: r.likedBy.filter(id => id !== user.uid),
+              }
+            : r
+        )
+      );
+
+    } else {
+      // ❤️ LIKE
+      await updateDoc(reelRef, {
+        likes: increment(1),
+        likedBy: arrayUnion(user.uid),
+      });
+
+      setReels((prev) =>
+        prev.map((r) =>
+          r.id === reel.id
+            ? {
+                ...r,
+                likes: (r.likes || 0) + 1,
+                likedBy: [...(r.likedBy || []), user.uid],
+              }
+            : r
+        )
+      );
     }
-  };
+
+  } catch (e) {
+    console.error(e);
+  }
+};
 
   const toggleMute = (id) => {
     setMuted((prev) => ({
@@ -153,7 +219,7 @@ const Homepage = ({ goToSearch }) => {
       [id]: !prev[id],
     }));
   };
-
+  const navigate = useNavigate();
   if (showCreateReel) {
     return (
       <CreateReelPage
@@ -296,270 +362,34 @@ const Homepage = ({ goToSearch }) => {
             }}
           >
             <div className="flex gap-4 overflow-x-auto pb-4">
+
+
+
+
+
               {reels.map((reel) => (
-                <div
-                  key={reel.id}
-                  className="relative flex-shrink-0 w-72 bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all overflow-hidden"
-                >
-                  {/* VIDEO - 9:16 VERTICAL */}
-                  <div
-                    className="relative bg-black"
-                    style={{
-                      aspectRatio:
-                        "9/16",
-                    }}
-                  >
-                    <video
-                      id={`vid-${reel.id}`}
-                      src={
-                        reel.videoUrl
-                      }
-                      className="w-full h-full object-cover"
-                      muted={
-                        muted[
-                          reel.id
-                        ] !== false
-                      }
-                      loop
-                      playsInline
-                    />
+  <Card
+    key={reel.id}
+    reel={reel}
+    muted={muted}
+    setMuted={setMuted}
+    playingId={playingId}
+    setPlayingId={setPlayingId}
+    handleLikeClick={handleLikeClick}
+    user={user}
+  />
+))}
 
-                    {/* CENTER PLAY/PAUSE BUTTON */}
-                    <button
-                      onClick={() => {
-                        const vid =
-                          document.getElementById(
-                            `vid-${reel.id}`,
-                          );
-                        if (
-                          playingId ===
-                          reel.id
-                        ) {
-                          vid.pause();
-                          setPlayingId(
-                            null,
-                          );
-                        } else {
-                          if (
-                            playingId
-                          ) {
-                            const prev =
-                              document.getElementById(
-                                `vid-${playingId}`,
-                              );
-                            if (prev)
-                              prev.pause();
-                          }
-                          vid.play();
-                          setPlayingId(
-                            reel.id,
-                          );
-                        }
-                      }}
-                      className="absolute inset-0 flex items-center justify-center bg-black/30 hover:bg-black/40 transition"
-                    >
-                      {playingId ===
-                      reel.id ? (
-                        <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur flex items-center justify-center">
-                          <div className="w-4 h-4 bg-white rounded-sm"></div>
-                        </div>
-                      ) : (
-                        <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur flex items-center justify-center">
-                          <Play
-                            size={20}
-                            className="text-white ml-1"
-                          />
-                        </div>
-                      )}
-                    </button>
 
-                    {/* ========== TOP BUTTONS ========== */}
-                    {/* Mute Button - Top Left */}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setMuted(
-                          (prev) => ({
-                            ...prev,
-                            [reel.id]:
-                              !prev[
-                                reel.id
-                              ],
-                          }),
-                        );
-                      }}
-                      className="absolute top-3 left-3 w-7 h-7 rounded-full bg-black/50 backdrop-blur flex items-center justify-center z-10 hover:bg-black/70 transition"
-                    >
-                      {muted[
-                        reel.id
-                      ] === false ? (
-                        <Volume2
-                          size={12}
-                          className="text-white"
-                        />
-                      ) : (
-                        <VolumeX
-                          size={12}
-                          className="text-white"
-                        />
-                      )}
-                    </button>
 
-                    {/* Like/Share Button - Top Right (Optional) */}
-                    <div className="absolute top-3 right-3 flex gap-2 z-10">
-                      <button className="w-7 h-7 rounded-full bg-black/50 backdrop-blur flex items-center justify-center hover:bg-red-500/50 transition">
-                        <Heart
-                          size={12}
-                          className="text-white"
-                        />
-                      </button>
-                    </div>
 
-                    {/* ========== MIDDLE BOTTOM BUTTONS (Vertical) ========== */}
-                    <div className="absolute bottom-20 right-3 flex flex-col gap-3 z-10">
-                      {/* Like Button with Count */}
-                      <button
-                        onClick={(
-                          e,
-                        ) => {
-                          e.stopPropagation();
-                          // Like logic
-                        }}
-                        className="flex flex-col items-center gap-0.5"
-                      >
-                        <div onClick={handlePost} className="w-9 h-9 rounded-full bg-black/50 backdrop-blur flex items-center justify-center hover:bg-red-500/50 transition">
-                          <Heart
-                            size={16}
-                            className="text-white"
-                          />
-                        </div>
-                        <span className="text-white text-[10px] font-semibold">
-                          {reel.likes ||
-                            0}
-                        </span>
-                      </button>
 
-                      {/* Comment Button */}
-                      <button className="flex flex-col items-center gap-0.5">
-                        <div className="w-9 h-9 rounded-full bg-black/50 backdrop-blur flex items-center justify-center">
-                          <MessageCircle
-                            size={16}
-                            className="text-white"
-                          />
-                        </div>
-                        <span className="text-white text-[10px] font-semibold">
-                          0
-                        </span>
-                      </button>
 
-                      {/* Share Button */}
-                      <button className="flex flex-col items-center gap-0.5">
-                        <div className="w-9 h-9 rounded-full bg-black/50 backdrop-blur flex items-center justify-center">
-                          <Share2
-                            size={16}
-                            className="text-white"
-                          />
-                        </div>
-                        <span className="text-white text-[10px] font-semibold">
-                          Share
-                        </span>
-                      </button>
-                    </div>
 
-                    {/* ========== BOTTOM OVERLAY - INFO + ORDER BUTTON ========== */}
-                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/95 via-black/70 to-transparent p-3">
-                      {/* Food Name */}
-                      <h4 className="font-bold text-white text-base mb-1">
-                        {reel.foodName}
-                      </h4>
 
-                      {/* Caption */}
-                      {reel.caption && (
-                        <p className="text-white/80 text-xs mb-2 line-clamp-2">
-                          {reel.caption}
-                        </p>
-                      )}
 
-                      {/* User Info + Order Button Row */}
-                      <div className="flex items-center justify-between mt-2">
-                        {/* User Info */}
-                        <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded-full bg-white/20 backdrop-blur overflow-hidden">
-                            {reel.userPhoto ? (
-                              <img
-                                src={
-                                  reel.userPhoto
-                                }
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center">
-                                <span className="text-xs font-bold text-white">
-                                  {reel.userName?.charAt(
-                                    0,
-                                  ) ||
-                                    "?"}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                          <div>
-                            <p className="text-white text-xs font-semibold">
-                              {reel.userName ||
-                                "Foodie"}
-                            </p>
-                            <p className="text-white/40 text-[9px]">
-                              {reel.restaurantName
-                                ? reel.restaurantName.substring(
-                                    0,
-                                    12,
-                                  )
-                                : "Food Lover"}
-                            </p>
-                          </div>
-                        </div>
 
-                        {/* ORDER NOW BUTTON - HIGHLY VISIBLE */}
-                        {reel.orderLink ? (
-                          <a
-                            href={
-                              reel.orderLink
-                            }
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            onClick={(
-                              e,
-                            ) =>
-                              e.stopPropagation()
-                            }
-                            className="flex items-center gap-2 px-4 py-2 rounded-full text-white text-xs font-bold transition hover:scale-105 active:scale-95 shadow-lg"
-                            style={{
-                              background: `${sunsetRed}`,
-                              boxShadow: `0 4px 12px ${sunsetRed}40`,
-                            }}
-                          >
-                            <ShoppingBag
-                              size={14}
-                            />
-                            ORDER NOW
-                          </a>
-                        ) : (
-                          <button
-                            disabled
-                            className="flex items-center gap-2 px-4 py-2 rounded-full bg-gray-500/50 text-white/50 text-xs font-bold cursor-not-allowed"
-                          >
-                            <ShoppingBag
-                              size={14}
-                            />
-                            NOT
-                            AVAILABLE
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
+              
             </div>
           </div>
         )}
@@ -585,7 +415,7 @@ const Homepage = ({ goToSearch }) => {
             />
           </div>
         </button>
-        <button className="text-zinc-400">
+        <button onClick={() => navigate("/reels")} className="text-zinc-400">
           <Film size={22} />
         </button>
 
@@ -613,7 +443,7 @@ const Homepage = ({ goToSearch }) => {
               className="w-10 h-10 rounded-full"
             />
           ) : (
-            <Heart size={22} />
+            <IoMdHeart size={22} />
           )}
         </button>
       </nav>
