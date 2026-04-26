@@ -1,34 +1,51 @@
-// ReelsPage.jsx - Updated to match your Card props
 import React, { useState, useEffect, useRef } from 'react';
 import { ArrowLeft } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { db } from './firebase';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { db, auth } from './firebase'; // 👈 Add auth import
 import { collection, query, orderBy, getDocs } from 'firebase/firestore';
-import Card from './ReelCard'; // Tera existing Card component
+import { onAuthStateChanged } from 'firebase/auth'; // 👈 Add this
+import Card from './ReelCard';
+import LoginPage from "./LoginPage";
+import { 
+  doc, 
+  updateDoc, 
+  increment, 
+  arrayUnion, 
+  arrayRemove 
+} from "firebase/firestore";
 
-const ReelsPage = ({ user }) => {
+const ReelsPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { goldenYellow, sunsetRed } = location.state || {};
+  
+  const [user, setUser] = useState(null); // 👈 Move user to state
   const [reels, setReels] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [playingId, setPlayingId] = useState(null);
   const [muted, setMuted] = useState({});
-  const scrollContainerRef = useRef(null);
+  const scrollRef = useRef(null);
+  const [showLogin, setShowLogin] = useState(false);
 
-  // Fetch reels
+  // 👈 Listen to auth state changes
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
+    return () => unsub();
+  }, []);
+
   useEffect(() => {
     fetchReels();
   }, []);
 
   const fetchReels = async () => {
     try {
-      setLoading(true);
       const q = query(collection(db, 'reels'), orderBy('createdAt', 'desc'));
       const snap = await getDocs(q);
-      const data = [];
-      snap.forEach((doc) => data.push({ id: doc.id, ...doc.data() }));
+      const data = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setReels(data);
-      console.log("Fetched reels:", data); // Debug
     } catch (err) {
       console.error(err);
     } finally {
@@ -36,44 +53,94 @@ const ReelsPage = ({ user }) => {
     }
   };
 
-  // Auto-play current reel
+  useEffect(() => {
+    if (reels.length > 0) {
+      const m = {};
+      reels.forEach(r => (m[r.id] = true));
+      setMuted(m);
+    }
+  }, [reels]);
+
   useEffect(() => {
     if (!loading && reels.length > 0) {
-      const currentReel = reels[currentIndex];
-      if (currentReel && playingId !== currentReel.id) {
-        // Auto play current video
-        const video = document.getElementById(`vid-${currentReel.id}`);
-        if (video) {
-          // Pause all others
-          reels.forEach(r => {
-            const otherVideo = document.getElementById(`vid-${r.id}`);
-            if (otherVideo && otherVideo !== video) {
-              otherVideo.pause();
-            }
-          });
-          video.play().catch(e => console.log("Auto-play error:", e));
-          setPlayingId(currentReel.id);
-        }
+      const current = reels[currentIndex];
+      if (!current) return;
+
+      const video = document.getElementById(`vid-${current.id}`);
+      if (video) {
+        reels.forEach(r => {
+          const v = document.getElementById(`vid-${r.id}`);
+          if (v && v !== video) v.pause();
+        });
+
+        video.play().catch(() => {});
+        setPlayingId(current.id);
+
+        setTimeout(() => {
+          setMuted(prev => ({ ...prev, [current.id]: false }));
+        }, 400);
       }
     }
-  }, [currentIndex, loading, reels]);
+  }, [currentIndex, reels, loading]);
 
-  // Handle scroll snap
   const handleScroll = () => {
-    if (scrollContainerRef.current) {
-      const scrollTop = scrollContainerRef.current.scrollTop;
-      const windowHeight = window.innerHeight;
-      const index = Math.round(scrollTop / windowHeight);
-      
-      if (index !== currentIndex && index >= 0 && index < reels.length) {
-        setCurrentIndex(index);
-      }
+    if (!scrollRef.current) return;
+    const index = Math.round(scrollRef.current.scrollTop / window.innerHeight);
+    if (index !== currentIndex && index >= 0 && index < reels.length) {
+      setCurrentIndex(index);
     }
   };
 
-  const handleLikeClick = (reel) => {
-    console.log("Like clicked for:", reel.id);
-    // Your like logic here
+  const handleLikeClick = async (reel) => {
+    console.log("User in like function:", user); // 👈 Debug log
+    
+    if (!user) {
+      setShowLogin(true);
+      return;
+    }
+  
+    try {
+      const reelRef = doc(db, "reels", reel.id);
+      const alreadyLiked = reel.likedBy?.includes(user.uid);
+  
+      if (alreadyLiked) {
+        await updateDoc(reelRef, {
+          likes: increment(-1),
+          likedBy: arrayRemove(user.uid),
+        });
+  
+        setReels((prev) =>
+          prev.map((r) =>
+            r.id === reel.id
+              ? {
+                  ...r,
+                  likes: Math.max((r.likes || 0) - 1, 0),
+                  likedBy: r.likedBy.filter(id => id !== user.uid),
+                }
+              : r
+          )
+        );
+      } else {
+        await updateDoc(reelRef, {
+          likes: increment(1),
+          likedBy: arrayUnion(user.uid),
+        });
+  
+        setReels((prev) =>
+          prev.map((r) =>
+            r.id === reel.id
+              ? {
+                  ...r,
+                  likes: (r.likes || 0) + 1,
+                  likedBy: [...(r.likedBy || []), user.uid],
+                }
+              : r
+          )
+        );
+      }
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   if (loading) {
@@ -87,66 +154,66 @@ const ReelsPage = ({ user }) => {
   if (reels.length === 0) {
     return (
       <div className="fixed inset-0 bg-black flex items-center justify-center z-50">
-        <div className="text-center">
-          <p className="text-white mb-4">No reels found</p>
-          <button onClick={() => navigate(-1)} className="text-orange-500">Go Back</button>
-        </div>
+        <p className="text-white">No reels found</p>
       </div>
     );
   }
 
   return (
     <div className="fixed inset-0 bg-black z-50">
-      
-      {/* BACK BUTTON */}
       <button
         onClick={() => navigate(-1)}
-        className="fixed top-4 left-4 z-50 w-10 h-10 rounded-full bg-black/50 backdrop-blur flex items-center justify-center hover:bg-black/70 transition"
+        className="fixed top-4 left-4 z-50 w-10 h-10 rounded-full bg-black/50 backdrop-blur flex items-center justify-center"
       >
         <ArrowLeft size={22} className="text-white" />
       </button>
 
-      {/* CURRENT REEL INDEX */}
       <div className="fixed top-4 right-4 z-50 bg-black/50 backdrop-blur px-3 py-1 rounded-full">
         <span className="text-white text-xs">
           {currentIndex + 1} / {reels.length}
         </span>
       </div>
 
-      {/* VERTICAL SCROLL CONTAINER */}
       <div
-        ref={scrollContainerRef}
+        ref={scrollRef}
         onScroll={handleScroll}
-        className="h-full w-full overflow-y-scroll snap-y snap-mandatory"
-        style={{ 
-          scrollbarWidth: 'none', 
-          msOverflowStyle: 'none',
-          scrollSnapType: 'y mandatory'
-        }}
+        className="h-screen w-full overflow-y-scroll snap-y snap-mandatory"
+        style={{ scrollSnapType: 'y mandatory' }}
       >
-        {reels.map((reel, index) => (
+        {reels.map((reel) => (
           <div
             key={reel.id}
-            className="relative h-screen w-full snap-start snap-always flex items-center justify-center bg-black"
-            style={{
-              scrollSnapAlign: 'start',
-              height: '100vh',
-              width: '100%'
-            }}
+            className="w-full h-screen flex items-center justify-center bg-black snap-start"
           >
-            {/* PASS PROPS EXACTLY AS YOUR CARD EXPECTS */}
-            <Card
-              reel={reel}
-              muted={muted}
-              setMuted={setMuted}
-              playingId={playingId}
-              setPlayingId={setPlayingId}
-              handleLikeClick={handleLikeClick}
-              user={user}
-            />
+            <div className="h-full flex items-center justify-center">
+              <div className="h-full aspect-[9/16] max-w-[450px] w-full">
+                <Card
+                  reel={reel}
+                  muted={muted}
+                  setMuted={setMuted}
+                  playingId={playingId}
+                  setPlayingId={setPlayingId}
+                  handleLikeClick={handleLikeClick}
+                  user={user}
+                  className="w-full h-full"
+                />
+              </div>
+            </div>
           </div>
         ))}
       </div>
+
+      {showLogin && (
+        <LoginPage
+          onLogin={async () => {
+            // Trigger login and wait for it
+            setShowLogin(false);
+            // The onAuthStateChanged will automatically update the user state
+          }}
+          onClose={() => setShowLogin(false)}
+          sunsetRed={sunsetRed || "#FF4500"}
+        />
+      )}
     </div>
   );
 };

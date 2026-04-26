@@ -354,44 +354,27 @@ const handleLikeClick = async (reel) => {
           </div>
         ) : (
           // HORIZONTAL SCROLL CONTAINER
-          <div
-            ref={scrollRef}
-            className="flex gap-4 overflow-x-auto pb-4 scroll-smooth"
-            style={{
-              scrollbarWidth: "thin",
-            }}
-          >
-            <div className="flex gap-4 overflow-x-auto pb-4">
-
-
-
-
-
-              {reels.map((reel) => (
-  <Card
-    key={reel.id}
-    reel={reel}
-    muted={muted}
-    setMuted={setMuted}
-    playingId={playingId}
-    setPlayingId={setPlayingId}
-    handleLikeClick={handleLikeClick}
-    user={user}
-  />
-))}
-
-
-
-
-
-
-
-
-
-
-              
-            </div>
-          </div>
+         <div
+  ref={scrollRef}
+  className="flex gap-4 overflow-x-auto pb-4 scroll-smooth"
+  style={{ scrollbarWidth: "thin" }}
+>
+  {reels.map((reel) => (
+    <div key={reel.id} className="w-[200px] sm:w-[230px] lg:w-[300px] flex-shrink-0">
+      <Card
+        reel={reel}
+        muted={muted}
+        setMuted={setMuted}
+        playingId={playingId}
+        setPlayingId={setPlayingId}
+        handleLikeClick={handleLikeClick}
+        user={user}
+        hideUserInfo={true} 
+        className="w-full"  // 👈 NO FIXED HEIGHT
+      />
+    </div>
+  ))}
+</div>
         )}
       </section>
 
@@ -415,6 +398,7 @@ const handleLikeClick = async (reel) => {
             />
           </div>
         </button>
+        
         <button onClick={() => navigate("/reels")} className="text-zinc-400">
           <Film size={22} />
         </button>

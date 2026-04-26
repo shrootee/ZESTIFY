@@ -33,8 +33,8 @@ const CreateReelPage = ({ onClose, user, goldenYellow, sunsetRed }) => {
   const fileInputRef = useRef(null);
 
   // Cloudinary config - REPLACE WITH YOUR CLOUDINARY CREDENTIALS
-  const CLOUDINARY_CLOUD_NAME = "dqs8iee0t"; // Get from cloudinary.com
-  const CLOUDINARY_UPLOAD_PRESET = "food_reels_preset"; // Create in Cloudinary settings
+  const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;// Create in Cloudinary settings
 
   const handleVideoSelect = (e) => {
     const file = e.target.files?.[0];
