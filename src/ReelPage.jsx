@@ -233,15 +233,16 @@ const ReelsPage = () => {
       </button>
 
       <div
-        ref={containerRef}
+       ref={containerRef}
         onScroll={handleScroll}
         onWheel={handleWheel}
         className="h-screen w-full overflow-y-scroll"
-        style={{ 
-          height: '100vh',
-          overflowY: 'scroll',
-          scrollBehavior: 'smooth',
-          scrollSnapType: 'y mandatory'
+        style={{
+          scrollSnapType: 'y mandatory',
+          
+          WebkitOverflowScrolling: 'touch',
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none'
         }}
       >
         {reels.map((reel, idx) => (
@@ -253,7 +254,7 @@ const ReelsPage = () => {
               height: '100vh'
             }}
           >
-            <div className="h-full w-full max-w-[330px] mx-auto relative">
+            <div className="h-full w-full md:w-auto md:max-w-[330px] mx-auto relative">
               <Card
                 reel={reel}
                 muted={muted}

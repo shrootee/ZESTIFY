@@ -264,3 +264,27 @@ video {
 .touch-action-none {
   touch-action: pan-y pinch-zoom;
 }
+
+/* Smooth scrolling for the reels container */
+.reels-container {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: y mandatory;
+  overflow-y: scroll;
+  height: 100vh;
+}
+
+/* Hide scrollbar but keep functionality */
+.reels-container::-webkit-scrollbar {
+  display: none;
+}
+
+/* Smooth transitions for all interactive elements */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Ensure smooth wheel scrolling */
+html {
+  scroll-behavior: smooth;
+}

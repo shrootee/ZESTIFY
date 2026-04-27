@@ -23,7 +23,8 @@ function Card({
   handleLikeClick, 
   user,
   className = "",
-  hideUserInfo
+  hideUserInfo,
+  isHomepage = false
 }) {
   const navigate = useNavigate();
   const videoRef = useRef(null);
@@ -62,7 +63,7 @@ function Card({
   return (
     <div 
       onClick={handleCardClick}
-      className={`relative w-full h-full ${className}`}
+      className={`relative w-full h-full ${className} ${isHomepage ? 'rounded-lg overflow-hidden' : ''}`}
     >
       <div className="relative w-full h-full bg-black overflow-hidden">
         
@@ -104,17 +105,21 @@ function Card({
                 [reel.id]: !prev[reel.id],
               }));
             }}
-            className="absolute top-4 right-4 w-8 h-8 md:w-10 md:h-10 rounded-full bg-black/50 backdrop-blur flex items-center justify-center z-20 hover:bg-black/70 transition"
+            className={`absolute top-4 right-4 w-8 h-8 md:w-10 md:h-10 rounded-full bg-black/50 backdrop-blur flex items-center justify-center z-20 hover:bg-black/70 transition${isHomepage ? 'scale-75' : ''}`}
           >
             {muted[reel.id] === false ? (
-              <Volume2 size={16} className="text-white md:w-5 md:h-5" />
+              <Volume2 size={16} className={`text-white md:w-5 md:h-5 ${isHomepage ? 'scale-75' : ''}`} />
             ) : (
-              <VolumeX size={16} className="text-white md:w-5 md:h-5" />
+              <VolumeX size={16} className={`text-white md:w-5 md:h-5 ${isHomepage ? 'scale-75' : ''}`} />
             )}
           </button>
 
           {/* RIGHT SIDE ACTION BUTTONS */}
-          <div className="absolute right-3 md:right-5 bottom-24 md:bottom-28 flex flex-col gap-3 md:gap-4 z-20">
+          <div className={`absolute flex flex-col z-20 ${
+        isHomepage
+          ? "right-1 bottom-1 md:right-5 md:bottom-28 scale-70 gap-1"
+          : "right-7 bottom-40 md:right-5 md:bottom-28 scale-110"
+      } gap-3 md:gap-4`}>
             {/* Like Button */}
             <button
               onClick={(e) => {
@@ -123,10 +128,23 @@ function Card({
               }}
               className="flex flex-col items-center gap-1 group"
             >
-              <div className="w-9 h-9 md:w-11 md:h-11 rounded-full bg-black/50 backdrop-blur flex items-center justify-center hover:bg-red-500/50 transition">
-                <IoMdHeart size={18} className={`md:w-5 md:h-5 transition ${reel.likedBy?.includes(user?.uid) ? "text-red-500 scale-110" : "text-white"}`} />
+              <div
+  className={`w-10 h-10 md:w-11 md:h-11 ${
+    isHomepage ? "scale-75" : ""
+  } rounded-full bg-black/50 backdrop-blur flex items-center justify-center hover:bg-red-500/50 transition`}
+>
+                <IoMdHeart 
+                  size={20} 
+                  className={`md:w-5 md:h-5 transition ${
+                    reel.likedBy?.includes(user?.uid)
+                      ? "text-red-500 scale-110"
+                      : "text-white"
+                  }`} 
+                />
               </div>
-              <span className="text-white text-[10px] md:text-xs font-semibold">
+              <span className={`text-white font-semibold ${
+  isHomepage ? "text-xs" : "text-[10px]"
+} md:text-xs`}>
                 {reel.likes || 0}
               </span>
             </button>
@@ -136,10 +154,16 @@ function Card({
               onClick={(e) => e.stopPropagation()}
               className="flex flex-col items-center gap-1 group"
             >
-              <div className="w-9 h-9 md:w-11 md:h-11 rounded-full bg-black/50 backdrop-blur flex items-center justify-center hover:bg-white/20 transition">
-                <MessageCircle size={16} className="text-white md:w-5 md:h-5" />
+              <div
+  className={`w-10 h-10 md:w-11 md:h-11 ${
+    isHomepage ? "scale-75" : "scale-100"
+  } rounded-full bg-black/50 backdrop-blur flex items-center justify-center hover:bg-red-500/50 transition`}
+>
+                <MessageCircle size={18} className="text-white md:w-5 md:h-5" />
               </div>
-              <span className="text-white text-[10px] md:text-xs font-semibold">0</span>
+              <span className={`text-white font-semibold ${
+  isHomepage ? "text-xs" : "text-[10px]"
+} md:text-xs`}>0</span>
             </button>
 
             {/* Share Button */}
@@ -147,19 +171,31 @@ function Card({
               onClick={(e) => e.stopPropagation()}
               className="flex flex-col items-center gap-1 group"
             >
-              <div className="w-9 h-9 md:w-11 md:h-11 rounded-full bg-black/50 backdrop-blur flex items-center justify-center hover:bg-white/20 transition">
-                <Share2 size={16} className="text-white md:w-5 md:h-5" />
+              <div
+  className={`w-10 h-10 md:w-11 md:h-11 ${
+    isHomepage ? "scale-75" : ""
+  } rounded-full bg-black/50 backdrop-blur flex items-center justify-center hover:bg-red-500/50 transition`}
+>
+                <Share2 size={18} className="text-white md:w-5 md:h-5" />
               </div>
-              <span className="text-white text-[10px] md:text-xs font-semibold">Share</span>
+              <span className={`text-white font-semibold ${
+  isHomepage ? "text-xs" : "text-[10px]"
+} md:text-xs`}>Share</span>
             </button>
           </div>
 
           {/* BOTTOM OVERLAY */}
-          <div className="absolute bottom-0 left-0 right-0 p-3 md:p-4 bg-gradient-to-t from-black/90 via-black/60 to-transparent z-20">
+          <div
+  className={`absolute bottom-0 left-0 right-0 p-4 z-20 pt-10 ${
+    isHomepage
+      ? "bg-transparent"
+      : "bg-gradient-to-t from-black/90 via-black/60 to-transparent pb-8"
+  }`}
+>
             {/* Food Name */}
-            <h4 className="font-bold text-white text-sm md:text-lg mb-1 pr-16 md:pr-20">
-              {reel.foodName}
-            </h4>
+           <h4 className="font-semibold text-white text-base md:text-lg mb-1 pr-14 md:pr-16">
+  {reel.foodName}
+</h4>
 
             {/* Caption */}
             <p className="text-white/80 text-xs md:text-sm mb-2 line-clamp-2 max-w-[65%] md:max-w-[60%]">
@@ -170,47 +206,79 @@ function Card({
             <div className="flex items-center justify-between gap-2">
               {/* User Info - LEFT SIDE */}
               {!hideUserInfo && (
-                <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
-                  <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-br from-orange-500 to-red-500 p-0.5">
-                    <div className="w-full h-full rounded-full bg-black/80 overflow-hidden">
-                      {reel.userPhoto ? (
-                        <img src={reel.userPhoto} className="w-full h-full object-cover" alt="user" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <span className="text-xs md:text-sm font-bold text-white">
-                            {reel.userName?.charAt(0) || "?"}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-white text-xs md:text-sm font-semibold truncate max-w-[120px] md:max-w-[200px]">
-                      {reel.userName || "Foodie"}
-                    </p>
-                    <p className="text-white/60 text-[10px] md:text-xs truncate max-w-[120px] md:max-w-[200px]">
-                      {reel.restaurantName ? reel.restaurantName.substring(0, 20) : "Food Lover"}
-                    </p>
-                  </div>
-                </div>
-              )}
+               <div className="flex items-center gap-2 flex-shrink-0">
+  <div
+    className={`rounded-full bg-gradient-to-br from-orange-500 to-red-500 p-0.5 ${
+      isHomepage
+        ? "w-9 h-9 md:w-8 md:h-8"
+        : "w-10 h-10 md:w-9 md:h-9"
+    }`}
+  >
+    <div className="w-full h-full rounded-full bg-black/80 overflow-hidden">
+      {reel.userPhoto ? (
+        <img src={reel.userPhoto} className="w-full h-full object-cover" alt="user" />
+      ) : (
+        <div className="w-full h-full flex items-center justify-center">
+          <span
+            className={`font-bold text-white ${
+              isHomepage
+                ? "text-xs md:text-xs"
+                : "text-sm md:text-sm"
+            }`}
+          >
+            {reel.userName?.charAt(0) || "?"}
+          </span>
+        </div>
+      )}
+    </div>
+  </div>
+
+  <div className="min-w-0">
+    <p
+      className={`text-white font-semibold truncate ${
+        isHomepage
+          ? "text-xs md:text-xs max-w-[120px]"
+          : "text-sm md:text-sm max-w-[140px]"
+      }`}
+    >
+      {reel.userName || "Foodie"}
+    </p>
+
+    <p
+      className={`text-white/60 truncate ${
+        isHomepage
+          ? "text-[10px] md:text-[10px] max-w-[120px]"
+          : "text-xs md:text-xs max-w-[140px]"
+      }`}
+    >
+      {reel.restaurantName ? reel.restaurantName.substring(0, 20) : "Food Lover"}
+    </p>
+  </div>
+</div>     )}
 
               {/* ORDER NOW BUTTON */}
               <div className="flex-shrink-0">
                 {reel.orderLink ? (
                   <a
-                    href={reel.orderLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                    className="flex items-center gap-1.5 px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm rounded-full text-white font-bold transition hover:scale-105 active:scale-95 shadow-lg whitespace-nowrap"
-                    style={{
-                      background: goldenYellow,
-                    }}
-                  >
-                    <ShoppingBag size={14} className="md:w-4 md:h-4" />
-                    ORDER NOW
-                  </a>
+  href={reel.orderLink}
+  target="_blank"
+  rel="noopener noreferrer"
+  onClick={(e) => e.stopPropagation()}
+  className={`flex items-center gap-2 rounded-full text-white font-bold transition hover:scale-105 active:scale-95 shadow-md whitespace-nowrap ${
+    isHomepage
+      ? "px-4 py-2 text-sm md:px-3 md:py-1.5 md:text-xs"
+      : "px-5 py-2.5 text-base md:px-5 md:py-2 md:text-sm"
+  }`}
+  style={{
+    background: goldenYellow,
+  }}
+>
+  <ShoppingBag
+    size={isHomepage ? 16 : 18}
+    className="md:w-5 md:h-5"
+  />
+  ORDER NOW
+</a>
                 ) : (
                   <button
                     disabled
@@ -223,7 +291,11 @@ function Card({
                 )}
               </div>
             </div>
+
+
           </div>
+
+
         </div>
       </div>
     </div>
