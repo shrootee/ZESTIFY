@@ -62,22 +62,28 @@ function Card({
   return (
     <div 
       onClick={handleCardClick}
-      className={`cursor-pointer ${className}`}
+      className={`relative w-full h-full ${className}`}
     >
-      <div className="relative w-full h-full bg-black overflow-hidden rounded-xl shadow-lg">
+      <div className="relative w-full h-full bg-black overflow-hidden">
         
+        {/* Video Container - fills entire space */}
         <div className="relative w-full h-full bg-black">
           <video
             ref={videoRef}
             id={`vid-${reel.id}`}
             src={reel.videoUrl}
-            className="w-full h-full object-contain"
+            className="w-full h-full object-cover"
             muted={muted[reel.id] !== false}
             loop
             playsInline
             onClick={(e) => e.stopPropagation()}
           />
 
+          {/* Gradient Overlays for better visibility */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/60 pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/10 via-transparent to-transparent pointer-events-none" />
+
+          {/* Play/Pause Overlay */}
           <button
             onClick={handleVideoClick}
             className="absolute inset-0 flex items-center justify-center bg-black/30 hover:bg-black/40 transition group"
@@ -89,7 +95,7 @@ function Card({
             )}
           </button>
 
-          {/* MUTE BUTTON - RIGHT SIDE TOP */}
+          {/* MUTE BUTTON - TOP RIGHT */}
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -98,121 +104,124 @@ function Card({
                 [reel.id]: !prev[reel.id],
               }));
             }}
-            className="absolute top-3 right-3 sm:top-4 sm:right-4 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-black/50 backdrop-blur flex items-center justify-center z-10 hover:bg-black/70 transition"
+            className="absolute top-4 right-4 w-8 h-8 md:w-10 md:h-10 rounded-full bg-black/50 backdrop-blur flex items-center justify-center z-20 hover:bg-black/70 transition"
           >
             {muted[reel.id] === false ? (
-              <Volume2 size={14} className="text-white" />
+              <Volume2 size={16} className="text-white md:w-5 md:h-5" />
             ) : (
-              <VolumeX size={14} className="text-white" />
+              <VolumeX size={16} className="text-white md:w-5 md:h-5" />
             )}
           </button>
 
-          {/* RIGHT SIDE ACTION BUTTONS (like, comment, share) */}
-          <div className="absolute bottom-40 right-2 sm:right-3 flex flex-col gap-3 sm:gap-4 z-10 pr-2">
+          {/* RIGHT SIDE ACTION BUTTONS */}
+          <div className="absolute right-3 md:right-5 bottom-24 md:bottom-28 flex flex-col gap-3 md:gap-4 z-20">
+            {/* Like Button */}
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 handleLikeClick(reel);
               }}
-              className="flex flex-col items-center gap-1"
+              className="flex flex-col items-center gap-1 group"
             >
-              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-black/50 backdrop-blur flex items-center justify-center hover:bg-red-500/50 transition">
-                <IoMdHeart
-                  size={18}
-                  className={`transition ${reel.likedBy?.includes(user?.uid) ? "text-red-500 scale-110" : "text-white"}`}
-                />
+              <div className="w-9 h-9 md:w-11 md:h-11 rounded-full bg-black/50 backdrop-blur flex items-center justify-center hover:bg-red-500/50 transition">
+                <IoMdHeart size={18} className={`md:w-5 md:h-5 transition ${reel.likedBy?.includes(user?.uid) ? "text-red-500 scale-110" : "text-white"}`} />
               </div>
-              <span className="text-white text-[10px] sm:text-[11px] font-semibold">
+              <span className="text-white text-[10px] md:text-xs font-semibold">
                 {reel.likes || 0}
               </span>
             </button>
 
+            {/* Comment Button */}
             <button 
               onClick={(e) => e.stopPropagation()}
-              className="flex flex-col items-center gap-1"
+              className="flex flex-col items-center gap-1 group"
             >
-              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-black/50 backdrop-blur flex items-center justify-center">
-                <MessageCircle size={16} className="text-white" />
+              <div className="w-9 h-9 md:w-11 md:h-11 rounded-full bg-black/50 backdrop-blur flex items-center justify-center hover:bg-white/20 transition">
+                <MessageCircle size={16} className="text-white md:w-5 md:h-5" />
               </div>
-              <span className="text-white text-[10px] sm:text-[11px] font-semibold">0</span>
+              <span className="text-white text-[10px] md:text-xs font-semibold">0</span>
             </button>
 
+            {/* Share Button */}
             <button 
               onClick={(e) => e.stopPropagation()}
-              className="flex flex-col items-center gap-1"
+              className="flex flex-col items-center gap-1 group"
             >
-              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-black/50 backdrop-blur flex items-center justify-center">
-                <Share2 size={16} className="text-white" />
+              <div className="w-9 h-9 md:w-11 md:h-11 rounded-full bg-black/50 backdrop-blur flex items-center justify-center hover:bg-white/20 transition">
+                <Share2 size={16} className="text-white md:w-5 md:h-5" />
               </div>
-              <span className="text-white text-[10px] sm:text-[11px] font-semibold">Share</span>
+              <span className="text-white text-[10px] md:text-xs font-semibold">Share</span>
             </button>
           </div>
 
           {/* BOTTOM OVERLAY */}
-          <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
+          <div className="absolute bottom-0 left-0 right-0 p-3 md:p-4 bg-gradient-to-t from-black/90 via-black/60 to-transparent z-20">
             {/* Food Name */}
-            <h4 className="font-bold text-white text-base sm:text-lg mb-0.5 sm:mb-1">
+            <h4 className="font-bold text-white text-sm md:text-lg mb-1 pr-16 md:pr-20">
               {reel.foodName}
             </h4>
 
-            {/* Caption - REDUCED WIDTH */}
-            <p className="text-white/80 text-xs sm:text-sm mb-3 line-clamp-1 sm:line-clamp-2 max-w-[65%] sm:max-w-[55%]">
+            {/* Caption */}
+            <p className="text-white/80 text-xs md:text-sm mb-2 line-clamp-2 max-w-[65%] md:max-w-[60%]">
               {reel.caption || "No caption"}
             </p>
 
-            {/* User Info Row (LEFT) + ORDER NOW BUTTON (RIGHT SIDE) */}
-            <div className="flex items-center justify-between gap-2 mt-2">
+            {/* User Info + Order Button Row */}
+            <div className="flex items-center justify-between gap-2">
               {/* User Info - LEFT SIDE */}
               {!hideUserInfo && (
-  <div className="flex items-center gap-2 flex-shrink-0">
-    <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white/20 backdrop-blur overflow-hidden">
-      {reel.userPhoto ? (
-        <img src={reel.userPhoto} className="w-full h-full object-cover" alt="user" />
-      ) : (
-        <div className="w-full h-full flex items-center justify-center">
-          <span className="text-xs sm:text-sm font-bold text-white">
-            {reel.userName?.charAt(0) || "?"}
-          </span>
-        </div>
-      )}
-    </div>
-    <div className="min-w-0">
-      <p className="text-white text-xs sm:text-sm font-semibold truncate max-w-[120px] sm:max-w-[160px]">
-        {reel.userName || "Foodie"}
-      </p>
-      <p className="text-white/40 text-[10px] sm:text-xs truncate max-w-[120px] sm:max-w-[160px]">
-        {reel.restaurantName ? reel.restaurantName.substring(0, 15) : "Food Lover"}
-      </p>
-    </div>
-  </div>
-)}
-
-              {/* ORDER NOW BUTTON - RIGHT SIDE WITH YELLOW COLOR */}
-              {reel.orderLink ? (
-                <a
-                  href={reel.orderLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={(e) => e.stopPropagation()}
-                  className="flex items-center gap-2 px-5 py-2.5 text-sm sm:px-4 sm:py-2 sm:text-xs rounded-full text-white font-bold transition hover:scale-105 active:scale-95 shadow-lg whitespace-nowrap flex-shrink-0 mb-4"
-                  style={{
-                    background: goldenYellow,
-                    // boxShadow: `0 4px 12px ${goldenYellow}60`,
-                  }}
-                >
-                  <ShoppingBag size={12} />
-                  ORDER NOW
-                </a>
-              ) : (
-                <button
-                  disabled
-                  onClick={(e) => e.stopPropagation()}
-                  className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-gray-500/50 text-white/50 text-[10px] sm:text-xs font-bold cursor-not-allowed whitespace-nowrap flex-shrink-0"
-                >
-                  <ShoppingBag size={12} />
-                  NA
-                </button>
+                <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
+                  <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-br from-orange-500 to-red-500 p-0.5">
+                    <div className="w-full h-full rounded-full bg-black/80 overflow-hidden">
+                      {reel.userPhoto ? (
+                        <img src={reel.userPhoto} className="w-full h-full object-cover" alt="user" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <span className="text-xs md:text-sm font-bold text-white">
+                            {reel.userName?.charAt(0) || "?"}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-white text-xs md:text-sm font-semibold truncate max-w-[120px] md:max-w-[200px]">
+                      {reel.userName || "Foodie"}
+                    </p>
+                    <p className="text-white/60 text-[10px] md:text-xs truncate max-w-[120px] md:max-w-[200px]">
+                      {reel.restaurantName ? reel.restaurantName.substring(0, 20) : "Food Lover"}
+                    </p>
+                  </div>
+                </div>
               )}
+
+              {/* ORDER NOW BUTTON */}
+              <div className="flex-shrink-0">
+                {reel.orderLink ? (
+                  <a
+                    href={reel.orderLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="flex items-center gap-1.5 px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm rounded-full text-white font-bold transition hover:scale-105 active:scale-95 shadow-lg whitespace-nowrap"
+                    style={{
+                      background: goldenYellow,
+                    }}
+                  >
+                    <ShoppingBag size={14} className="md:w-4 md:h-4" />
+                    ORDER NOW
+                  </a>
+                ) : (
+                  <button
+                    disabled
+                    onClick={(e) => e.stopPropagation()}
+                    className="flex items-center gap-1.5 px-3 md:px-4 py-1.5 md:py-2 rounded-full bg-gray-500/50 text-white/50 text-xs md:text-sm font-bold cursor-not-allowed whitespace-nowrap"
+                  >
+                    <ShoppingBag size={14} className="md:w-4 md:h-4" />
+                    NA
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>

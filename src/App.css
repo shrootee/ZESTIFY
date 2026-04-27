@@ -182,3 +182,85 @@
     border-right-color: var(--border);
   }
 }
+
+/* Smooth scrolling improvements */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Custom scrollbar hiding for cleaner look */
+.h-screen::-webkit-scrollbar {
+  display: none;
+}
+
+.h-screen {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Smooth scroll behavior */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Better video rendering */
+video {
+  object-fit: cover;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+/* Snap scrolling improvements */
+.snap-y {
+  scroll-snap-type: y mandatory;
+  scroll-snap-stop: always;
+}
+
+.snap-start {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+/* Animation for like button */
+@keyframes likeAnimation {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.3);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.fill-red-500 {
+  animation: likeAnimation 0.3s ease-in-out;
+}
+
+/* Progress bar animation */
+@keyframes progress {
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+.animate-progress {
+  animation: progress 15s linear forwards;
+}
+
+/* Text truncation utility */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Better touch handling */
+.touch-action-none {
+  touch-action: pan-y pinch-zoom;
+}
