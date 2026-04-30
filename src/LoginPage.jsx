@@ -8,6 +8,9 @@ const LoginPage = ({ onClose, sunsetRed }) => {
   const handleLogin = async () => {
     try {
       await signInWithPopup(auth, googleProvider);
+      if (result.user) {
+      onClose(); // ✅ Add this line
+    }
       // login hone ke baad automatically App.jsx handle karega
     } catch (error) {
       console.error("Login Error:", error);

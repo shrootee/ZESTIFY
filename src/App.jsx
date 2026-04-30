@@ -5,6 +5,8 @@ import ReelPage from "./ReelPage";
 import { useState , useEffect } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./firebase";
+import CommentSection from './CommentSection';
+
 
 function App() {
   const [user, setUser] = useState(null);

@@ -138,9 +138,11 @@ const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;/
         userPhoto: currentUser?.photoURL || '',
         likes: 0,
         likedBy: [],
-        comments: [],
+        
         createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
+        updatedAt: serverTimestamp(),
+        commentsCount: 0,
+       
       });
       
       return docRef.id;
@@ -307,7 +309,7 @@ const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;/
             {/* Food Name */}
             <div className="bg-white rounded-xl border border-gray-200 p-4">
               <label className="block text-sm font-semibold mb-2" style={{ color: themeSunsetRed }}>
-                🍔 Food Name {videoPreviewUrl && <span className="text-red-500 text-xs">*</span>}
+                🍔 Caption {videoPreviewUrl && <span className="text-red-500 text-xs">*</span>}
               </label>
               <input
                 type="text"
@@ -362,7 +364,7 @@ const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;/
             {/* Caption */}
             <div className="bg-white rounded-xl border border-gray-200 p-4">
               <label className="block text-sm font-semibold mb-2" style={{ color: themeSunsetRed }}>
-                ✏️ Caption
+                ✏️ Hashtags
               </label>
               <textarea
                 value={caption}
